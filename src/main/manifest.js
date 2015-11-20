@@ -1,6 +1,6 @@
 /* globals require */
 
-import * as scanner from './scanner.es6';
+import * as scanner from './scanner.js';
 
 let _ = require('underscore');
 

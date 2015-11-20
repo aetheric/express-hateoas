@@ -1,6 +1,6 @@
-import { registerResolverConfigFactory } from '../scanner.es6';
-import ResolverConfig from '../ResolverConfig.es6';
-import ResolverConfigFactory from '../ResolverConfigFactory.es6';
+import { registerResolverConfigFactory } from '../scanner.js';
+import ResolverConfig from '../ResolverConfig.js';
+import ResolverConfigFactory from '../ResolverConfigFactory.js';
 
 let _ = require('underscore');
 let sass = require('node-sass');

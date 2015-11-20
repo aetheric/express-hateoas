@@ -1,4 +1,4 @@
-import ResolverConfig from './ResolverConfig.es6';
+import ResolverConfig from './ResolverConfig.js';
 
 export default class ManifestConfig extends ResolverConfig {
 

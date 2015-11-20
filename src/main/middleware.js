@@ -1,6 +1,6 @@
 /* globals */
 
-import manifest from './manifest.es6';
+import manifest from './manifest.js';
 
 export default function(config) {
 

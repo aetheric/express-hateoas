@@ -1,7 +1,7 @@
 /* globals console */
 
 import app from '../express.es6';
-import staticHandler from './staticHandler.es6';
+import staticHandler from './staticHandler.js';
 
 export default function (dir, file) {
 
