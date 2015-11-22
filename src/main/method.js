@@ -53,11 +53,19 @@ export default class Method {
 
 			const handler = getHandler(request);
 
-			if (handler) {
-				return handler(request, response);
+			if (!handler) {
+				response.status(415);
+				return;
 			}
 
-			console.log('No appropriate type handler found.');
+			const errors = handler.validate(request.data);
+
+			if (!errors) {
+				return handler.handle(request, response);
+			}
+
+			response.status(400)
+					.body(errors);
 
 		});
 
