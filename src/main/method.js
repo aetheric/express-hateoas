@@ -2,7 +2,7 @@
 'use strict';
 
 import Type from './type.js';
-import * as codes from './ref/codes.js';
+import * as httpConst from 'http-constants';
 
 /**
  * @param {String} path
@@ -40,7 +40,7 @@ export default class Method {
 				return this.types[pathMatch];
 			}
 
-			const mime = request.header('ContentType');
+			const mime = request.header(httpConst.headers.CONTENT_TYPE);
 			const mimeMatch = extractTypeFromMime(mime);
 			if (mimeMatch) {
 				return this.types[mimeMatch];
@@ -55,7 +55,7 @@ export default class Method {
 			const handler = getHandler(request);
 
 			if (!handler) {
-				response.status(codes.UNSUPPORTED_MEDIA_TYPE);
+				response.status(httpConst.codes.UNSUPPORTED_MEDIA_TYPE);
 				return;
 			}
 
@@ -65,7 +65,7 @@ export default class Method {
 				return handler.handle(request, response);
 			}
 
-			response.status(codes.BAD_REQUEST)
+			response.status(httpConst.codes.BAD_REQUEST)
 					.body(errors);
 
 		});
