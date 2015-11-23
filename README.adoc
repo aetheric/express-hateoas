@@ -1,0 +1,4 @@
+= EXPRESS HATEOAS
+:author: Peter Cummuskey
+:email: peterc@aetheric.co.nz
+
