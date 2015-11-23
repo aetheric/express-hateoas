@@ -2,23 +2,55 @@
 'use strict';
 
 import Method from './method.js';
+import * as verbs from './ref/methods.js'
+
+function ensure(resource, verb) {
+	return resource.methods[verb]
+			|| ( resource.methods[verb] = new Method(resource.methods, verb) );
+}
 
 export default class Resource {
 
 	constructor(hateoas, path) {
 		this.hateoas = hateoas;
-		this.path = path;
+		this._path = path;
 		this.methods = {};
 	}
 
-	on(method) {
+	get path() {
+		return this._path;
+	}
 
-		let action = this.methods[method];
-		if (!action) {
-			action = new Method(this, method);
-		}
+	OPTIONS() {
+		return ensure(this, verbs.OPTIONS);
+	}
 
-		return action;
+	GET() {
+		return ensure(this, verbs.GET);
+	}
+
+	HEAD() {
+		return ensure(this, verbs.HEAD);
+	}
+
+	POST() {
+		return ensure(this, verbs.POST);
+	}
+
+	PUT() {
+		return ensure(this, verbs.PUT);
+	}
+
+	DELETE() {
+		return ensure(this, verbs.DELETE);
+	}
+
+	TRACE() {
+		return ensure(this, verbs.TRACE);
+	}
+
+	CONNECT() {
+		return ensure(this, verbs.CONNECT);
 	}
 
 }

@@ -2,6 +2,7 @@
 'use strict';
 
 import Type from './type.js';
+import * as codes from './ref/codes.js';
 
 /**
  * @param {String} path
@@ -54,7 +55,7 @@ export default class Method {
 			const handler = getHandler(request);
 
 			if (!handler) {
-				response.status(415);
+				response.status(codes.UNSUPPORTED_MEDIA_TYPE);
 				return;
 			}
 
@@ -64,7 +65,7 @@ export default class Method {
 				return handler.handle(request, response);
 			}
 
-			response.status(400)
+			response.status(codes.BAD_REQUEST)
 					.body(errors);
 
 		});
@@ -72,17 +73,8 @@ export default class Method {
 	}
 
 	as (type) {
-
-		const existingType = this.types[type];
-		if (existingType) {
-			return existingType;
-		}
-
-		const newType = new Type(this, type);
-		this.types[type] = newType;
-
-		return newType;
-
+		return this.types[type]
+				|| ( this.types[type] = new Type(this, type) );
 	}
 
 }
