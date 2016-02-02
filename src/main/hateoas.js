@@ -10,8 +10,16 @@ export default class Hateoas {
 	 * @param {?} express The instantiated expressjs object.
 	 */
 	constructor(express) {
-		this.express = express;
-		this.resources = {};
+		this._express = express;
+		this._resources = {};
+	}
+
+	get express() {
+		return this._express;
+	}
+
+	get resources() {
+		return this._resources;
 	}
 
 	/**
@@ -19,10 +27,10 @@ export default class Hateoas {
 	 */
 	resource(path) {
 
-		let resource = this.resources[path];
+		let resource = resources[path];
 
 		if (!resource) {
-			resource = new Resource(this.express, path);
+			resource = new Resource(express, path);
 		}
 
 		return resource;

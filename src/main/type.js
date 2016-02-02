@@ -6,8 +6,8 @@ import _ from 'underscore';
 export default class Type {
 
 	constructor(method, type) {
-		this.method = method;
-		this.type = type;
+		this._method = method;
+		this._type = type;
 
 		this._validator = (data) => {};
 
@@ -15,6 +15,14 @@ export default class Type {
 			throw new Error('Handler has not been implemented for request: ' + JSON.stringify(request, null, '\t'));
 		};
 
+	}
+
+	get method() {
+		return this._method;
+	}
+
+	get type() {
+		return this._type;
 	}
 
 	set validator(validator) {
@@ -37,15 +45,23 @@ export default class Type {
 
 	}
 
-	validate(request) {
+	init(validator, handler) {
+		this.validator = validator;
+		this.handler = handler;
+	}
 
-		const data = _.extend({}, request.query, request.body, request.params);
-
+	validate(request, onError) {
 		try {
-			this._validator(data);
+			return this._validator(request);
 
 		} catch (error) {
-			return error;
+
+			if (onError) {
+				return onError(error);
+			}
+
+			throw error;
+
 		}
 	}
 

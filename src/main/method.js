@@ -22,6 +22,50 @@ export function extractTypeFromMime(mime) {
 			: undefined;
 }
 
+export const buildGetHandler = (types) => (request) => {
+
+	const pathMatch = extractTypeFromPath(request.pathname);
+	if (pathMatch) {
+		return types[pathMatch];
+	}
+
+	const mime = request.header(httpConst.headers.CONTENT_TYPE);
+	const mimeMatch = extractTypeFromMime(mime);
+	if (mimeMatch) {
+		return types[mimeMatch];
+	}
+
+	return undefined;
+
+};
+
+export const buildHandler = (getHandler) => (request, response) => {
+
+	const handler = getHandler(request);
+
+	if (!handler) {
+		response.status(httpConst.codes.UNSUPPORTED_MEDIA_TYPE);
+		return;
+	}
+
+	let data;
+	try {
+		data = handler.validate(request.data);
+
+	} catch (error) {
+		response.status(httpConst.codes.BAD_REQUEST)
+				.body(JSON.stringify(error));
+	}
+
+	try {
+		handler.handle(request, response, data);
+	} catch (error) {
+		response.status(httpConst.codes.INTERNAL_SERVER_ERROR)
+				.body(JSON.stringify(error));
+	}
+
+};
+
 export default class Method {
 
 	/**
@@ -29,52 +73,28 @@ export default class Method {
 	 * @param {String} method
 	 */
 	constructor(resource, method) {
-		this.resource = resource;
-		this.method = method;
-		this.types = {};
+		this._resource = resource;
+		this._method = method;
+		this._types = {};
 
-		const getHandler = (request) => {
-
-			const pathMatch = extractTypeFromPath(request.pathname);
-			if (pathMatch) {
-				return this.types[pathMatch];
-			}
-
-			const mime = request.header(httpConst.headers.CONTENT_TYPE);
-			const mimeMatch = extractTypeFromMime(mime);
-			if (mimeMatch) {
-				return this.types[mimeMatch];
-			}
-
-			return undefined;
-
-		};
-
-		resource.express[method]((request, response) => {
-
-			const handler = getHandler(request);
-
-			if (!handler) {
-				response.status(httpConst.codes.UNSUPPORTED_MEDIA_TYPE);
-				return;
-			}
-
-			const errors = handler.validate(request.data);
-
-			if (!errors) {
-				return handler.handle(request, response);
-			}
-
-			response.status(httpConst.codes.BAD_REQUEST)
-					.body(errors);
-
-		});
+		resource.express[method](buildHandler(buildGetHandler(types)));
 
 	}
 
-	as (type) {
-		return this.types[type]
-				|| ( this.types[type] = new Type(this, type) );
+	get resource() {
+		return this._resource;
+	}
+
+	get method() {
+		return this._method;
+	}
+
+	get types() {
+		return this._types;
+	}
+
+	as(type) {
+		return types[type] || ( types[type] = new Type(this, type) );
 	}
 
 }
