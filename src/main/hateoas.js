@@ -2,7 +2,6 @@
 'use strict';
 
 import Resource from './resource.js';
-import Middleware from './middleware.js';
 
 export default class Hateoas {
 
@@ -27,10 +26,10 @@ export default class Hateoas {
 	 */
 	resource(path) {
 
-		let resource = resources[path];
+		let resource = this._resources[path];
 
 		if (!resource) {
-			resource = new Resource(express, path);
+			resource = new Resource(this._express, path);
 		}
 
 		return resource;

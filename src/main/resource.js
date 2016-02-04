@@ -1,11 +1,13 @@
 /* global */
 'use strict';
 
+import http from 'http-constants'
 import crypto from 'crypto-api';
 import files from 'fs';
 
 import Method from './method.js';
-import * as verbs from './ref/methods.js'
+
+const verbs = http.methods;
 
 function ensure(resource, verb) {
 	return resource.methods[verb]
@@ -21,7 +23,7 @@ export default class Resource {
 
 	constructor(hateoas, path) {
 		this._hateoas = hateoas;
-		this._path = cleansePath(path);
+		this._path = Resource.cleansePath(path);
 		this._methods = {};
 	}
 

@@ -24,6 +24,7 @@
   "dependencies": {
     "crypto-api": "^0.6.1",
     "file-stream": "0.0.0",
-    "http-constants": "^1.1.0-alpha.1"
+    "http-constants": "^1.1.0-alpha.1",
+    "underscore": "^1.8.3"
   }
 }
