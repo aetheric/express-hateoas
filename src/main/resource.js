@@ -10,8 +10,9 @@ import Method from './method.js';
 const verbs = http.methods;
 
 function ensure(resource, verb) {
-	return resource.methods[verb]
-			|| ( resource.methods[verb] = new Method(resource, verb) );
+	const lcverb = verb.toLowerCase();
+	return resource.methods[lcverb]
+			|| ( resource.methods[lcverb] = new Method(resource, lcverb) );
 }
 
 /**

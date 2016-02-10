@@ -29,7 +29,7 @@ export default class Hateoas {
 		let resource = this._resources[path];
 
 		if (!resource) {
-			resource = new Resource(this._express, path);
+			resource = new Resource(this, path);
 		}
 
 		return resource;

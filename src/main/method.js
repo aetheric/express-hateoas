@@ -96,7 +96,8 @@ export default class Method {
 	}
 
 	as(type) {
-		return types[type] || ( types[type] = new Type(this, type) );
+		return this._types[type]
+				|| ( this._types[type] = new Type(this, type) );
 	}
 
 }
