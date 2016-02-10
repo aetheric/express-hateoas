@@ -1,4 +1,4 @@
-/* global */
+/* global JSON */
 'use strict';
 
 import _ from 'underscore';
@@ -46,8 +46,14 @@ export default class Type {
 	}
 
 	init(validator, handler) {
-		this.validator = validator;
-		this.handler = handler;
+
+		if (this._validator || this._handler) {
+			throw new Error('One or more of validator or handler has already been set.');
+		}
+
+		this._validator = validator;
+		this._handler = handler;
+
 	}
 
 	validate(request, onError) {
