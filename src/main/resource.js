@@ -11,7 +11,7 @@ const verbs = http.methods;
 
 function ensure(resource, verb) {
 	return resource.methods[verb]
-			|| ( resource.methods[verb] = new Method(resource.methods, verb) );
+			|| ( resource.methods[verb] = new Method(resource, verb) );
 }
 
 /**
@@ -44,7 +44,7 @@ export default class Resource {
 	 * @returns {Resource}
 	 */
 	child(path) {
-		return new Resource(this._hateoas, `${this.path}${cleansePath(path)}`);
+		return new Resource(this._hateoas, `${this._path}${Resource.cleansePath(path)}`);
 	}
 
 	file(type, filePath) {
@@ -157,7 +157,7 @@ export default class Resource {
 	static cleansePath(path) {
 
 		if (!path || path[0] !== '/') {
-			return cleansePath('/' + path);
+			return Resource.cleansePath('/' + path);
 		}
 
 		return path;

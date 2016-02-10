@@ -77,7 +77,9 @@ export default class Method {
 		this._method = method;
 		this._types = {};
 
-		resource.express[method](buildHandler(buildGetHandler(types)));
+		const getHandler = buildGetHandler(this._types);
+		const handler = buildHandler(getHandler);
+		resource.hateoas.express[method](handler);
 
 	}
 
