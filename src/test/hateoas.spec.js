@@ -1,10 +1,10 @@
-/* globals describe, __dirname */
+/* globals describe, it, __dirname */
 
-let _ = require('underscore');
-let path = require('path');
-let chai = require('chai');
+import _ from 'underscore';
+import path from 'path';
+import chai from 'chai';
 
-let expect = chai.expect;
+const expect = chai.expect;
 
 import * as target from '../../server/hateoas.es6';
 
