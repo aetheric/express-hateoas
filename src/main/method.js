@@ -22,49 +22,24 @@ export function extractTypeFromMime(mime) {
 			: undefined;
 }
 
-export const buildGetHandler = (types) => (request) => {
+export function getHandlerFromRequest(request, handlers) {
 
 	const pathMatch = extractTypeFromPath(request.pathname);
 	if (pathMatch) {
-		return types[pathMatch];
+		console.trace(`Extracted request type ${pathMatch} from ${request.pathname}.`);
+		return handlers[pathMatch];
 	}
 
 	const mime = request.header(httpConst.headers.CONTENT_TYPE);
 	const mimeMatch = extractTypeFromMime(mime);
 	if (mimeMatch) {
-		return types[mimeMatch];
+		console.trace(`Extracted request type ${mimeMatch} from ${mime}.`);
+		return handlers[mimeMatch];
 	}
 
-	return undefined;
+	return null;
 
-};
-
-export const buildHandler = (getHandler) => (request, response) => {
-
-	const handler = getHandler(request);
-
-	if (!handler) {
-		response.status(httpConst.codes.UNSUPPORTED_MEDIA_TYPE);
-		return;
-	}
-
-	let data;
-	try {
-		data = handler.validate(request.data);
-
-	} catch (error) {
-		response.status(httpConst.codes.BAD_REQUEST)
-				.body(JSON.stringify(error));
-	}
-
-	try {
-		handler.handle(request, response, data);
-	} catch (error) {
-		response.status(httpConst.codes.INTERNAL_SERVER_ERROR)
-				.body(JSON.stringify(error));
-	}
-
-};
+}
 
 export default class Method {
 
@@ -77,9 +52,33 @@ export default class Method {
 		this._method = method;
 		this._types = {};
 
-		const getHandler = buildGetHandler(this._types);
-		const handler = buildHandler(getHandler);
-		resource.hateoas.express[method](handler);
+		resource.hateoas.express[method](this._resource.path, (request, response) => {
+
+			const handler = getHandlerFromRequest(request, this._types);
+
+			if (!handler) {
+				console.warn(`No handler found for request.`);
+				response.status(httpConst.codes.UNSUPPORTED_MEDIA_TYPE);
+				return;
+			}
+
+			let data;
+			try {
+				data = handler.validate(request.data);
+
+			} catch (error) {
+				response.status(httpConst.codes.BAD_REQUEST)
+						.body(JSON.stringify(error));
+			}
+
+			try {
+				handler.handle(request, response, data);
+			} catch (error) {
+				response.status(httpConst.codes.INTERNAL_SERVER_ERROR)
+						.body(JSON.stringify(error));
+			}
+
+		});
 
 	}
 

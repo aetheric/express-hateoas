@@ -45,7 +45,8 @@ export default class Resource {
 	 * @returns {Resource}
 	 */
 	child(path) {
-		return new Resource(this._hateoas, `${this._path}${Resource.cleansePath(path)}`);
+		const newPath = `${this._path}${Resource.cleansePath(path)}`;
+		return new Resource(this._hateoas, newPath);
 	}
 
 	file(type, filePath) {

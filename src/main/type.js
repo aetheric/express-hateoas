@@ -8,13 +8,6 @@ export default class Type {
 	constructor(method, type) {
 		this._method = method;
 		this._type = type;
-
-		this._validator = (data) => {};
-
-		this._handler = (request, response) => {
-			throw new Error('Handler has not been implemented for request: ' + JSON.stringify(request, null, '\t'));
-		};
-
 	}
 
 	get method() {
@@ -57,8 +50,13 @@ export default class Type {
 	}
 
 	validate(request, onError) {
+
+		const validator = this._validator || ((data) => {
+			console.info(`Not validating ${this._type} on ${this._resource.path}.`)
+		});
+
 		try {
-			return this._validator(request);
+			return validator(request);
 
 		} catch (error) {
 
@@ -72,7 +70,13 @@ export default class Type {
 	}
 
 	handle(request, response) {
-		return this._handler(request, response);
+
+		const handler = this._handler || ((request, response) => {
+			throw new Error('Handler has not been implemented for request: ' + JSON.stringify(request, null, '\t'));
+		});
+
+		return handler(request, response);
+
 	}
 
 }
