@@ -2,44 +2,7 @@
 'use strict';
 
 import Type from './type.js';
-import * as httpConst from 'http-constants';
-
-/**
- * @param {String} path
- * @returns {String}
- */
-export function extractTypeFromPath(path) {
-	const matches = /.*\.(\w+)$/.exec(path);
-	return matches && matches.length > 1
-			? matches[1]
-			: undefined;
-}
-
-export function extractTypeFromMime(mime) {
-	const matches = /\w+\/(\w+)$/.exec(mime);
-	return matches && matches.length > 1
-			? matches[1]
-			: undefined;
-}
-
-export function getHandlerFromRequest(request, handlers) {
-
-	const pathMatch = extractTypeFromPath(request.pathname);
-	if (pathMatch) {
-		console.trace(`Extracted request type ${pathMatch} from ${request.pathname}.`);
-		return handlers[pathMatch];
-	}
-
-	const mime = request.header(httpConst.headers.CONTENT_TYPE);
-	const mimeMatch = extractTypeFromMime(mime);
-	if (mimeMatch) {
-		console.trace(`Extracted request type ${mimeMatch} from ${mime}.`);
-		return handlers[mimeMatch];
-	}
-
-	return null;
-
-}
+import httpConst from 'http-constants';
 
 export default class Method {
 
@@ -54,13 +17,19 @@ export default class Method {
 
 		resource.hateoas.express[method](this._resource.path, (request, response) => {
 
-			const handler = getHandlerFromRequest(request, this._types);
+			const mime = request.headers[httpConst.headers.request.ACCEPT];
+			const matches = /[\w\-\*]+?\/([\w\-\*]+?)$/.exec(mime);
 
-			if (!handler) {
+			if (!matches || matches.length < 2) {
 				console.warn(`No handler found for request.`);
 				response.status(httpConst.codes.UNSUPPORTED_MEDIA_TYPE);
 				return;
 			}
+
+			const mimeMatch = matches[1];
+			console.trace(`Extracted request type ${mimeMatch} from ${mime}.`);
+
+			const handler = this._types[mimeMatch];
 
 			let data;
 			try {
@@ -68,14 +37,14 @@ export default class Method {
 
 			} catch (error) {
 				response.status(httpConst.codes.BAD_REQUEST)
-						.body(JSON.stringify(error));
+						.json(error);
 			}
 
 			try {
 				handler.handle(request, response, data);
 			} catch (error) {
 				response.status(httpConst.codes.INTERNAL_SERVER_ERROR)
-						.body(JSON.stringify(error));
+						.json(error);
 			}
 
 		});

@@ -2,6 +2,7 @@
 'use strict';
 
 import Resource from './resource.js';
+import httpConst from 'http-constants';
 
 export default class Hateoas {
 
@@ -11,6 +12,28 @@ export default class Hateoas {
 	constructor(express) {
 		this._express = express;
 		this._resources = {};
+
+		this._express.use((request, response, next) => {
+
+			console.info(`Checking request on ${request.url} for mime override extension`);
+			const matches = /.*\.(\w+)$/.exec(request.url);
+
+			if (!matches || matches.length < 2) {
+				console.info(`No overrides found.`);
+				next();
+			}
+
+			const type = matches[1];
+			console.info(`Detected type ${type} for request on ${request.url}`);
+
+			request.headers[httpConst.headers.request.ACCEPT] = `*/${type}`;
+			request.url = request.url.substring(0, request.url.length - (type.length + 1));
+
+			console.info(`Altered path for request to be ${request.url}.`);
+			next();
+
+		});
+
 	}
 
 	get express() {
