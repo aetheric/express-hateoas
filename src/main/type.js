@@ -52,7 +52,7 @@ export default class Type {
 	validate(request, onError) {
 
 		const validator = this._validator || ((data) => {
-			console.info(`Not validating ${this._type} on ${this._resource.path}.`)
+			console.info(`Not validating ${this._type} on ${this._method.resource.path} for ${JSON.stringify(data, null, '\t')}.`);
 		});
 
 		try {

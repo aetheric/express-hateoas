@@ -17,34 +17,38 @@ export default class Method {
 
 		resource.hateoas.express[method](this._resource.path, (request, response) => {
 
-			const mime = request.headers[httpConst.headers.request.ACCEPT];
-			const matches = /[\w\-\*]+?\/([\w\-\*]+?)$/.exec(mime);
-
-			if (!matches || matches.length < 2) {
-				console.warn(`No handler found for request.`);
-				response.status(httpConst.codes.UNSUPPORTED_MEDIA_TYPE);
-				return;
-			}
-
-			const mimeMatch = matches[1];
-			console.trace(`Extracted request type ${mimeMatch} from ${mime}.`);
-
-			const handler = this._types[mimeMatch];
-
-			let data;
 			try {
-				data = handler.validate(request.data);
 
-			} catch (error) {
-				response.status(httpConst.codes.BAD_REQUEST)
-						.json(error);
-			}
+				const mime = request.headers[httpConst.headers.request.ACCEPT];
+				const matches = /[\w\-\*]+?\/([\w\-\*]+?)$/.exec(mime);
 
-			try {
+				if (!matches || matches.length < 2) {
+					console.warn(`No handler found for request.`);
+					return response.status(httpConst.codes.UNSUPPORTED_MEDIA_TYPE);
+				}
+
+				const mimeMatch = matches[1];
+				console.info(`Extracted request type ${mimeMatch} from ${mime}.`);
+
+				const handler = this._types[mimeMatch];
+
+				let data;
+				try {
+					data = handler.validate(request.data);
+
+				} catch (error) {
+					return response.status(httpConst.codes.BAD_REQUEST).json({
+						message: error.message
+					});
+				}
+
 				handler.handle(request, response, data);
+
 			} catch (error) {
-				response.status(httpConst.codes.INTERNAL_SERVER_ERROR)
-						.json(error);
+				console.error(error.stack);
+				return response.status(httpConst.codes.INTERNAL_SERVER_ERROR).json({
+					error: 'An unexpected error occurred.'
+				});
 			}
 
 		});
