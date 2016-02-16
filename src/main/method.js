@@ -1,8 +1,24 @@
-/* global */
+/* global process */
 'use strict';
 
 import Type from './type.js';
 import httpConst from 'http-constants';
+
+function determineType(request) {
+
+	const headerAccept = request.headers[httpConst.headers.request.ACCEPT.toLowerCase()];
+	const headerContentType = request.headers[httpConst.headers.request.CONTENT_TYPE.toLowerCase()];
+
+	const matches = /[\w\-\*]+?\/([\w\-\*]+?)$/.exec( headerAccept || headerContentType );
+
+	if (!matches || matches.length < 2) {
+		console.warn(`No mime found in headers.`);
+		return null;
+	}
+
+	return matches[1];
+
+}
 
 export default class Method {
 
@@ -15,43 +31,17 @@ export default class Method {
 		this._method = method;
 		this._types = {};
 
-		resource.hateoas.express[method](this._resource.path, (request, response) => {
+		const path = resource.path;
 
-			try {
+		try {
+			const express = resource.hateoas.express;
+			express[method](path, (i,o) => this.handle(i,o));
+			console.info(`Handler added for ${method}:${path}.`);
 
-				const mime = request.headers[httpConst.headers.request.ACCEPT];
-				const matches = /[\w\-\*]+?\/([\w\-\*]+?)$/.exec(mime);
-
-				if (!matches || matches.length < 2) {
-					console.warn(`No handler found for request.`);
-					return response.status(httpConst.codes.UNSUPPORTED_MEDIA_TYPE);
-				}
-
-				const mimeMatch = matches[1];
-				console.info(`Extracted request type ${mimeMatch} from ${mime}.`);
-
-				const handler = this._types[mimeMatch];
-
-				let data;
-				try {
-					data = handler.validate(request.data);
-
-				} catch (error) {
-					return response.status(httpConst.codes.BAD_REQUEST).json({
-						message: error.message
-					});
-				}
-
-				handler.handle(request, response, data);
-
-			} catch (error) {
-				console.error(error.stack);
-				return response.status(httpConst.codes.INTERNAL_SERVER_ERROR).json({
-					error: 'An unexpected error occurred.'
-				});
-			}
-
-		});
+		} catch (error) {
+			console.error(`Failed to add handler for ${method}:${path} - ${error.stack}`);
+			process.exit(1);
+		}
 
 	}
 
@@ -67,9 +57,44 @@ export default class Method {
 		return this._types;
 	}
 
+	handle(request, response) {
+		try {
+
+			const type = determineType(request);
+			if (!type) {
+				return response.status(httpConst.codes.UNSUPPORTED_MEDIA_TYPE);
+			}
+
+			const handler = this._types[type];
+
+			let data;
+			try {
+				data = handler.validate(request.data);
+
+			} catch (error) {
+				return response.status(httpConst.codes.BAD_REQUEST).json({
+					message: error.message
+				});
+			}
+
+			handler.handle(request, response, data);
+
+		} catch (error) {
+			console.error(error.stack);
+			return response.status(httpConst.codes.INTERNAL_SERVER_ERROR).json({
+				error: 'An unexpected error occurred.'
+			});
+		}
+	}
+
 	as(type) {
-		return this._types[type]
-				|| ( this._types[type] = new Type(this, type) );
+		try {
+			return this._types[type]
+					|| ( this._types[type] = new Type(this, type) );
+		} catch (error) {
+			console.error(`hateoas/method: ${error.stack}`);
+			process.exit(1);
+		}
 	}
 
 }

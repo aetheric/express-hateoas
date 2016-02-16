@@ -1,4 +1,4 @@
-/* global */
+/* global process */
 'use strict';
 
 import http from 'http-constants'
@@ -45,8 +45,14 @@ export default class Resource {
 	 * @returns {Resource}
 	 */
 	child(path) {
-		const newPath = `${this._path}${Resource.cleansePath(path)}`;
-		return new Resource(this._hateoas, newPath);
+		try {
+			const newPath = `${this._path}${Resource.cleansePath(path)}`;
+			return new Resource(this._hateoas, newPath);
+
+		} catch (error) {
+			console.error(`/hateoas/resource: ${error.stack}`);
+			process.exit(1);
+		}
 	}
 
 	file(type, filePath) {
