@@ -1,4 +1,4 @@
-/* global process */
+/* global process, console, JSON */
 'use strict';
 
 import Type from './type.js';
@@ -36,7 +36,7 @@ export default class Method {
 		try {
 			const express = resource.hateoas.express;
 			express[method](path, (i,o) => this.handle(i,o));
-			console.info(`Handler added for ${method}:${path}.`);
+			console.info(`Handler added for ${path} : ${method}.`);
 
 		} catch (error) {
 			console.error(`Failed to add handler for ${method}:${path} - ${error.stack}`);
@@ -62,6 +62,7 @@ export default class Method {
 
 			const type = determineType(request);
 			if (!type) {
+				console.info(`Request for ${this._resource.path} expecting nonexistent ${type} handler.`);
 				return response.status(httpConst.codes.UNSUPPORTED_MEDIA_TYPE);
 			}
 
@@ -69,7 +70,12 @@ export default class Method {
 
 			let data;
 			try {
-				data = handler.validate(request.data);
+				data = handler.validate({
+					headers: request.headers,
+					body: request.body,
+					params: request.params,
+					query: request.query
+				});
 
 			} catch (error) {
 				return response.status(httpConst.codes.BAD_REQUEST).json({
@@ -77,7 +83,7 @@ export default class Method {
 				});
 			}
 
-			handler.handle(request, response, data);
+			return handler.handle(request, response, data);
 
 		} catch (error) {
 			console.error(error.stack);
