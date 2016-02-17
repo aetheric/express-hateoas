@@ -1,6 +1,7 @@
 /* global JSON */
 'use strict';
 
+import _ from 'underscore';
 import suit from 'suit';
 
 const constraints = suit.constraints();
@@ -54,7 +55,7 @@ export default class Type {
 
 	}
 
-	validate(data, onError) {
+	validate(data) {
 
 		const validator = this._validator || ((data) => {
 			console.info(`Not validating ${this._type} on ${this._method.resource.path}.`);
@@ -65,8 +66,8 @@ export default class Type {
 
 		} catch (error) {
 
-			if (onError) {
-				return onError(error);
+			if (_.isString(error)) {
+				throw JSON.parse(error);
 			}
 
 			throw error;
