@@ -1,8 +1,9 @@
 /* global process, console, JSON */
 'use strict';
 
-import Type from './type.js';
 import httpConst from 'http-constants';
+
+import Type from './type.js';
 
 function determineType(request) {
 
@@ -67,8 +68,8 @@ export default class Method {
 			}
 
 			const handler = this._types[type];
-
 			let data;
+
 			try {
 				data = handler.validate({
 					headers: request.headers,
@@ -78,9 +79,15 @@ export default class Method {
 				});
 
 			} catch (error) {
-				return response.status(httpConst.codes.BAD_REQUEST).json({
-					message: error.message
-				});
+
+				if (_.isArray(error)) {
+					console.info(`Client submitted bad request: ${JSON.stringify(error)}`);
+					return response.status(httpConst.codes.BAD_REQUEST).json(error);
+				}
+
+				//noinspection ExceptionCaughtLocallyJS
+				throw error;
+
 			}
 
 			return handler.handle(request, response, data);
@@ -95,8 +102,16 @@ export default class Method {
 
 	as(type) {
 		try {
-			return this._types[type]
-					|| ( this._types[type] = new Type(this, type) );
+
+			const stored = this._types[type];
+			if (stored) {
+				console.error(`Handler already registered for ${this._resource.path}.${type}:${this._method}.`);
+				process.exit(1);
+			}
+
+			const newtype = new Type(this, type);
+			return this._types[type] = newtype;
+
 		} catch (error) {
 			console.error(`hateoas/method: ${error.stack}`);
 			process.exit(1);

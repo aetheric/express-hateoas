@@ -1,7 +1,9 @@
 /* global JSON */
 'use strict';
 
-import _ from 'underscore';
+import suit from 'suit';
+
+const constraints = suit.constraints();
 
 export default class Type {
 
@@ -21,6 +23,7 @@ export default class Type {
 	set validator(validator) {
 
 		if (this._validator) {
+			console.error('You shouldn\'t try to set this more than once.');
 			throw new Error('Validator has already been set.');
 		}
 
@@ -31,6 +34,7 @@ export default class Type {
 	set handler(handler) {
 
 		if (this._handler) {
+			console.error('You shouldn\'t try to set this more than once.');
 			throw new Error('Handler has already been set.');
 		}
 
@@ -41,6 +45,7 @@ export default class Type {
 	init(validator, handler) {
 
 		if (this._validator || this._handler) {
+			console.error('You shouldn\'t try to set this more than once.');
 			throw new Error('One or more of validator or handler has already been set.');
 		}
 
@@ -49,14 +54,14 @@ export default class Type {
 
 	}
 
-	validate(request, onError) {
+	validate(data, onError) {
 
 		const validator = this._validator || ((data) => {
-			console.info(`Not validating ${this._type} on ${this._method.resource.path} for ${JSON.stringify(data, null, '\t')}.`);
+			console.info(`Not validating ${this._type} on ${this._method.resource.path}.`);
 		});
 
 		try {
-			return validator(request);
+			return suit.fit(data, validator(constraints));
 
 		} catch (error) {
 
@@ -69,13 +74,16 @@ export default class Type {
 		}
 	}
 
-	handle(request, response) {
+	handle(request, response, data) {
 
-		const handler = this._handler || ((request, response) => {
-			throw new Error('Handler has not been implemented for request: ' + JSON.stringify(request, null, '\t'));
-		});
+		const handler = this._handler;
 
-		return handler(request, response);
+		if (!handler) {
+			console.error('Handler not implemented!');
+			throw new Error('Request cannot be procesed. Handler not implemented.');
+		}
+
+		return handler(request, response, data);
 
 	}
 
