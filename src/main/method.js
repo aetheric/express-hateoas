@@ -1,6 +1,7 @@
 /* global process, console, JSON */
 'use strict';
 
+import _ from 'underscore';
 import httpConst from 'http-constants';
 
 import Type from './type.js';
@@ -90,7 +91,12 @@ export default class Method {
 
 			}
 
-			return handler.handle(request, response, data);
+			return handler.handle(request, response, data).catch((error) => {
+				console.error(error.stack);
+				return response.status(httpConst.codes.INTERNAL_SERVER_ERROR).json({
+					error: 'An unexpected error occurred.'
+				});
+			});
 
 		} catch (error) {
 			console.error(error.stack);
