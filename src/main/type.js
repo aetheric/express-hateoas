@@ -1,8 +1,9 @@
-/* global JSON */
+/* global JSON, console */
 'use strict';
 
 import _ from 'underscore';
 import suit from 'suit';
+import httpConst from 'http-constants';
 
 const constraints = suit.constraints();
 
@@ -80,8 +81,12 @@ export default class Type {
 		const handler = this._handler;
 
 		if (!handler) {
-			console.error('Handler not implemented!');
-			throw new Error('Request cannot be procesed. Handler not implemented.');
+			return response.status(httpConst.codes.NOT_FOUND).json({});
+		}
+
+		const user = request.session && request.session.user;
+		if (handler.permission && !user || _.contains(user.permissions, handler.permission)) {
+			return response.status(httpConst.codes.UNAUTHORIZED)
 		}
 
 		return handler(request, response, data);
