@@ -1,9 +1,9 @@
 {
   "name": "express-hateoas",
-  "version": "1.0.0",
-  "description": "1.1.0-alpha.1",
+  "description": "An express-based HATEOAS helper library.",
   "main": "index.js",
   "scripts": {
+	"build": "gulp build",
     "test": "gulp test"
   },
   "repository": {
@@ -24,7 +24,7 @@
   "dependencies": {
     "crypto-api": "^0.6.1",
     "file-stream": "0.0.0",
-    "http-constants": "^1.1.0-alpha.1",
+    "http-constants": "1.1.x",
     "suit": "^0.4.0",
     "underscore": "^1.8.3"
   }
