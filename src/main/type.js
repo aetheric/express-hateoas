@@ -114,8 +114,8 @@ export default class Type {
 			return response.status(httpConst.codes.NOT_FOUND).json({});
 		}
 
-		const user = request.session && request.session.user;
-		if (handler.permission && !user || _.contains(user.permissions, handler.permission)) {
+		const user = request.session && request.session['user'];
+		if (handler.permission && ( !user || _.contains(user.permissions, handler.permission) )) {
 			return response.status(httpConst.codes.UNAUTHORIZED)
 		}
 
