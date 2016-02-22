@@ -14,14 +14,35 @@ export default class Type {
 		this._type = type;
 	}
 
+	/**
+	 * @returns {Method}
+	 */
 	get method() {
 		return this._method;
 	}
 
+	/**
+	 * @returns {String}
+	 */
 	get type() {
 		return this._type;
 	}
 
+	/**
+	 * @param {String} permission
+	 */
+	set permission(permission) {
+		this._permission = permission;
+	}
+
+	/**
+	 * @callback Validator
+	 * @param {Object} constraints Constrainst object from the 'suit' validation library.
+	 * @returns {Object} suit schema
+	 */
+	/**
+	 * @param {Validator} validator
+	 */
 	set validator(validator) {
 
 		if (this._validator) {
@@ -33,6 +54,16 @@ export default class Type {
 
 	}
 
+	/**
+	 * @callback Handler
+	 * @param {*} request
+	 * @param {*} response
+	 * @param {Object} params
+	 * @returns {Promise}
+	 */
+	/**
+	 * @param {Handler} handler
+	 */
 	set handler(handler) {
 
 		if (this._handler) {
@@ -44,18 +75,11 @@ export default class Type {
 
 	}
 
-	init(validator, handler) {
-
-		if (this._validator || this._handler) {
-			console.error('You shouldn\'t try to set this more than once.');
-			throw new Error('One or more of validator or handler has already been set.');
-		}
-
-		this._validator = validator;
-		this._handler = handler;
-
-	}
-
+	/**
+	 * @param {Object} data
+	 * @returns {Object}
+	 * @throws {Array} When a validation error occurs
+	 */
 	validate(data) {
 
 		const validator = this._validator || ((data) => {
@@ -76,6 +100,12 @@ export default class Type {
 		}
 	}
 
+	/**
+	 * @param request
+	 * @param response
+	 * @param data
+	 * @returns {Promise}
+	 */
 	handle(request, response, data) {
 
 		const handler = this._handler;

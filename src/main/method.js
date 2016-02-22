@@ -76,7 +76,8 @@ export default class Method {
 					headers: request.headers,
 					body: request.body,
 					params: request.params,
-					query: request.query
+					query: request.query,
+					session: request.session
 				});
 
 			} catch (error) {
