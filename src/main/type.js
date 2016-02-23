@@ -5,7 +5,10 @@ import _ from 'underscore';
 import suit from 'suit';
 import httpConst from 'http-constants';
 
-const constraints = suit.constraints();
+const constraints = suit.constraints([
+	'basic-types',
+	'basic-ui'
+]);
 
 export default class Type {
 
@@ -114,9 +117,9 @@ export default class Type {
 			return response.status(httpConst.codes.NOT_FOUND).json({});
 		}
 
-		const user = request.session && request.session['user'];
+		const user = request.session && request.session['principle'];
 		if (handler.permission && ( !user || _.contains(user.permissions, handler.permission) )) {
-			return response.status(httpConst.codes.UNAUTHORIZED)
+			return response.status(httpConst.codes.UNAUTHORIZED).json({});
 		}
 
 		return handler(request, response, data);
