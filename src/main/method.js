@@ -47,7 +47,7 @@ export default class Method {
 	}
 
 	handle(request, response) {
-		return determineType(request, response).then((typeHandler) => {
+		return determineType(request, response, this._types).then((typeHandler) => {
 
 			return checkPermission(request, typeHandler, response).then(() => {
 				return doValidation(request, typeHandler, response);
