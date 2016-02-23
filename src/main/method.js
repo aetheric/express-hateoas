@@ -5,22 +5,9 @@ import _ from 'underscore';
 import httpConst from 'http-constants';
 
 import Type from './type.js';
-
-function determineType(request) {
-
-	const headerAccept = request.headers[httpConst.headers.request.ACCEPT.toLowerCase()];
-	const headerContentType = request.headers[httpConst.headers.request.CONTENT_TYPE.toLowerCase()];
-
-	const matches = /[\w\-\*]+?\/([\w\-\*]+?)$/.exec( headerAccept || headerContentType );
-
-	if (!matches || matches.length < 2) {
-		console.warn(`No mime found in headers.`);
-		return null;
-	}
-
-	return matches[1];
-
-}
+import determineType from './_determineType.js';
+import checkPermission from './_checkPermission.js';
+import doValidation from './_doValidation.js';
 
 export default class Method {
 
@@ -60,51 +47,27 @@ export default class Method {
 	}
 
 	handle(request, response) {
-		try {
+		return determineType(request, response).then((typeHandler) => {
 
-			const type = determineType(request);
-			if (!type) {
-				console.info(`Request for ${this._resource.path} expecting nonexistent ${type} handler.`);
-				return response.status(httpConst.codes.UNSUPPORTED_MEDIA_TYPE);
-			}
+			return checkPermission(request, typeHandler, response).then(() => {
+				return doValidation(request, typeHandler, response);
 
-			const handler = this._types[type];
-			let data;
+			}).then((data) => {
+				return typeHandler.handle(request, response, data);
 
-			try {
-				data = handler.validate({
-					headers: request.headers,
-					body: request.body,
-					params: request.params,
-					query: request.query,
-					session: request.session
-				});
+			});
 
-			} catch (error) {
+		}).catch((error) => {
 
-				if (_.isArray(error)) {
-					console.info(`Client submitted bad request: ${JSON.stringify(error)}`);
-					return response.status(httpConst.codes.BAD_REQUEST).json(error);
-				}
-
-				//noinspection ExceptionCaughtLocallyJS
-				throw error;
-
-			}
-
-			return handler.handle(request, response, data).catch((error) => {
+			if (error) {
 				console.error(error.stack);
 				return response.status(httpConst.codes.INTERNAL_SERVER_ERROR).json({
 					error: 'An unexpected error occurred.'
 				});
-			});
+			}
 
-		} catch (error) {
-			console.error(error.stack);
-			return response.status(httpConst.codes.INTERNAL_SERVER_ERROR).json({
-				error: 'An unexpected error occurred.'
-			});
-		}
+		});
+
 	}
 
 	as(type) {

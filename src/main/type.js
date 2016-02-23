@@ -85,7 +85,7 @@ export default class Type {
 	 */
 	validate(data) {
 
-		const validator = this._validator || ((data) => {
+		const validator = this._validator || (() => {
 			console.info(`Not validating ${this._type} on ${this._method.resource.path}.`);
 		});
 
@@ -115,11 +115,6 @@ export default class Type {
 
 		if (!handler) {
 			return response.status(httpConst.codes.NOT_FOUND).json({});
-		}
-
-		const user = request.session && request.session['principle'];
-		if (handler.permission && ( !user || _.contains(user.permissions, handler.permission) )) {
-			return response.status(httpConst.codes.UNAUTHORIZED).json({});
 		}
 
 		return handler(request, response, data);
