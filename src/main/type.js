@@ -39,6 +39,13 @@ export default class Type {
 	}
 
 	/**
+	 * @returns {String}
+	 */
+	get permission() {
+		return this._permission;
+	}
+
+	/**
 	 * @callback Validator
 	 * @param {Object} constraints Constrainst object from the 'suit' validation library.
 	 * @returns {Object} suit schema

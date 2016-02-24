@@ -1,6 +1,7 @@
 /* global process, console, JSON */
 'use strict';
 
+import _ from 'underscore';
 import httpConst from 'http-constants';
 
 export default function checkPermission(request, typeHandler, response) {
